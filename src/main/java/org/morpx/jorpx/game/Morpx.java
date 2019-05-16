@@ -11,7 +11,7 @@ import org.morpx.jorpx.event.IntListener;
 import org.morpx.jorpx.event.TIntListener;
 import org.morpx.jorpx.event.VoidListener;
 
-public class Morpx implements Game {
+public class Morpx {
 	
 	private static final class Board {
 		private int[] board;
@@ -61,7 +61,7 @@ public class Morpx implements Game {
 		}
 	}
 	
-	public static final class MorpxMove implements Move {
+	public static final class MorpxMove {
 		protected int x0, y0, x1, y1;
 		
 		public MorpxMove(int x0, int y0, int x1, int y1) {
@@ -122,20 +122,16 @@ public class Morpx implements Game {
 		this.lastY=obj.lastY;
 	}
 	
-	@Override
 	public int getNextPlayer() {
 		return this.nextPlayer;
 	}
 	
-	@Override
 	public boolean isFinished() {
 		return this.finished;
 	}
-	@Override
 	public int getWinner() {
 		return this.winner;
 	}
-	@Override
 	public int getEstimatedScore() {
 		if(this.estimatedScore==Integer.MIN_VALUE) this.estimateScore();
 		return this.estimatedScore;
@@ -147,14 +143,11 @@ public class Morpx implements Game {
 		return (x==this.lastX && y==this.lastY) || (this.board.getMeta(this.lastX, this.lastY)!=0);
 	}
 	
-	@Override
-	public boolean canPlay(Move move) {
+	public boolean canPlay(MorpxMove mm) {
 		if(this.finished) return false;
 		
-		MorpxMove mm=(MorpxMove) move;
 		return (this.canPlayGrid(mm.x0, mm.y0) && this.board.get(mm)==0);
 	}
-	@Override
 	public List<MorpxMove> getPossibleMoves() {
 		if(this.finished) return Collections.emptyList();
 		
@@ -169,13 +162,11 @@ public class Morpx implements Game {
 		return moves;
 	}
 	
-	@Override
-	public void play(Move move) {
+	public void play(MorpxMove mm) {
 		// invalidate the estimated score
 		this.estimatedScore=Integer.MIN_VALUE;
 		
 		// play the actual move
-		MorpxMove mm=(MorpxMove) move;
 		int x0=mm.x0, y0=mm.y0, x1=mm.x1, y1=mm.y1;
 		this.board.set(x0, y0, x1, y1, this.nextPlayer);
 		this.lastX=x1;
@@ -223,13 +214,13 @@ public class Morpx implements Game {
 					this.board.getMeta(1, y0)==this.nextPlayer &&
 					this.board.getMeta(2, y0)==this.nextPlayer
 				) || (
-					x1==y1 && (
+					x0==y0 && (
 						this.board.getMeta(0, 0)==this.nextPlayer &&
 						this.board.getMeta(1, 1)==this.nextPlayer &&
 						this.board.getMeta(2, 2)==this.nextPlayer
 					)
 				) || (
-					y1==2-x1 && (
+					y0==2-x0 && (
 						this.board.getMeta(2, 0)==this.nextPlayer &&
 						this.board.getMeta(1, 1)==this.nextPlayer &&
 						this.board.getMeta(0, 2)==this.nextPlayer
@@ -254,12 +245,17 @@ public class Morpx implements Game {
 		// check for full board
 		if(updatedMeta && !updatedStatus) {
 			if(this.board.isFull()) {
+				this.finished=true;
 				this.sendFinishEvent(0);
 			}
 		}
 		
 		// end the turn
 		this.nextPlayer=-this.nextPlayer;
+		if(!this.finished) this.sendTurnEvent();
+	}
+	
+	public void start() {
 		this.sendTurnEvent();
 	}
 	
