@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.morpx.jorpx.ai.MinmaxAI;
+import org.morpx.jorpx.ai.NeatAI;
 import org.morpx.jorpx.ai.RandomAI;
 import org.morpx.jorpx.config.Config;
 import org.morpx.jorpx.game.GUI;
@@ -35,6 +36,20 @@ public class Main {
 					int[] c=new int[4];
 					for(int j=0; j<4; j++) c[j]=Integer.parseInt(conf.get("p"+i, "c"+j));
 					MinmaxAI ai=new MinmaxAI(path, depth, c[0], c[1], c[2], c[3]);
+					ai.install(game, i);
+					break;
+				}
+				
+				case "neat": {
+					String path=conf.get("p"+i, "path");
+					File dir=new File(conf.get("p"+i, "dir"));
+					String checkpoint=conf.get("p"+i, "checkpoint");
+					NeatAI ai;
+					if(conf.get("p"+i, "netid")==null) {
+						ai=new NeatAI(path, dir, checkpoint);
+					} else {
+						ai=new NeatAI(path, dir, checkpoint, Integer.parseInt(conf.get("p"+i, "netid")));
+					}
 					ai.install(game, i);
 					break;
 				}
